@@ -17,4 +17,17 @@ USER=$($PSQL "SELECT * FROM users WHERE username = $USERNAME::TEXT")
 if [[ -z $USER ]]
 then
   echo -e "\nWelcome, $USERNAME! It looks like this is your first time here."
+  INSERT_USER_RESULT=$($PSQL "INSERT INTO users(username) VALUES ('$USERNAME')")
+else
+  # if user found
+  echo $USER | while IFS=" |" read USERNAME GAMES_PLAYED BEST_GAME
+  do
+    echo -e "\nWelcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
+  done
 fi
+
+# get guess
+echo -e "\nGuess the secret number between 1 and 1000: "
+read GUESS
+
+echo $GUESS

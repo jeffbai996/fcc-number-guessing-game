@@ -5,23 +5,21 @@ PSQL="psql -X --username=freecodecamp --dbname=game --tuples-only -c"
 
 MAIN_MENU() {
   # get username
-  echo "Enter your username: "
+  echo "Enter your username:"
   read USERNAME
 
   # find user
-  FOUND_USER=$($PSQL "SELECT * FROM users WHERE username = '$USERNAME'")
+  FOUND_USER_ID=$($PSQL "SELECT user_id FROM users WHERE username = '$USERNAME'")
 
   # if found
-  if [[ $FOUND_USER ]]
+  if [[ -z $FOUND_USER_ID ]]
   then
-    echo $FOUND_USER | while IFS=" |" read USER_ID USERNAME GAMES_PLAYED BEST_GAME
-    do
-      echo -e "\nWelcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
-    done
-  else
-    # if not found
     echo -e "\nWelcome, $USERNAME! It looks like this is your first time here."
-    INSERT_USER_RESULT=$($PSQL "INSERT INTO users(username) VALUES ('$USERNAME')")
+    INSERT_USER=$($PSQL "INSERT INTO users(username) VALUES('$USERNAME')")
+  else
+    GAMES_PLAYED=$($PSQL "SELECT MIN(games_played) FROM users WHERE user_id = '$FOUND_USER_ID'")
+    BEST_GAME=$($PSQL "SELECT MIN(best_game) FROM users WHERE user_id = '$FOUND_USER_ID'")
+    echo -e "\nWelcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
   fi
 
   GAME
@@ -58,6 +56,9 @@ do
     let TRIES++
   fi
 done
+
+INCREMENT_GAMES_PLAYED=$($PSQL "UPDATE users SET games_played=$(($GAMES_PLAYED+1)) WHERE username='$USERNAME'")
+UPDATE_BEST_GAME=$($PSQL "UPDATE users SET best_game=$TRIES WHERE username='$USERNAME' AND (best_game>$TRIES OR best_game = 0)")
 
 echo -e "\nYou guessed it in $TRIES tries. The secret number was $RAND_NUM. Nice job!"
 }

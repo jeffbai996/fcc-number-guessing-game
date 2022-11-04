@@ -32,9 +32,6 @@ GAME() {
   TRIES=0
   # get guess
   echo -e "\nGuess the secret number between 1 and 1000: "
-  # remove later
-  echo -e "\nHint: it's $RAND_NUM"
-  read GUESS
 
 until [[ $GUESS -eq $RAND_NUM ]]
 do
